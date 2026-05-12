@@ -8,9 +8,9 @@ Um jogo educativo infantil desenvolvido para ensinar crianças sobre a cidade de
 
 # 👥 Integrantes
 
-- [Gabriel Henrique Leite Pinheiro](#)
+- [Gabriel Henrique Leite Pinheiro](https://www.linkedin.com/in/gabriel-henrique-41b494348/)
 - [Julia Luchini](https://www.linkedin.com/in/julia-luchini/)
-- [Matheus Gums](#)
+- [Matheus Gums](https://www.linkedin.com/in/matheus-gums-976b413a1/)
 - [Ryan da Silva](#)
 
 ---
