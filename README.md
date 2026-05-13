@@ -1,6 +1,6 @@
 # Projeto-Game-Brusque-2026-UNIFEBE
 Desenvolvimento de jogo educativo para crianças de 4-5 anos.
-# Nome do Jogo 🎮
+# Missão no Vale 🎮
 
 Um jogo educativo infantil desenvolvido para ensinar crianças sobre a cidade de Brusque de forma divertida, interativa e acessível.
 
@@ -11,7 +11,7 @@ Um jogo educativo infantil desenvolvido para ensinar crianças sobre a cidade de
 - [Gabriel Henrique Leite Pinheiro](https://www.linkedin.com/in/gabriel-henrique-41b494348/)
 - [Julia Luchini](https://www.linkedin.com/in/julia-luchini-4a72a22b0/)
 - [Matheus Gums](https://www.linkedin.com/in/matheus-gums-976b413a1/)
-- [Ryan da Silva](#)
+- [Ryan da Silva](https://github.com/ryansilva-code)
 
 ---
 
