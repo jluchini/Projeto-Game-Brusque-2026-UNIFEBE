@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Missão no Vale</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sky: #6EC6E6;
+      --sky-dark: #4AADE0;
+      --yellow: #FFD93D;
+      --orange: #FF8C42;
+      --brown-dark: #5C3A1E;
+      --white: #FFFEF5;
+      --cream: #FFF5E0;
+      --correct: #3DB05A;
+      --wrong: #E84040;
+      --text-dark: #2C1810;
+      font-size: clamp(14px, 2vw, 16px);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Baloo 2', cursive;
+      background: var(--sky);
+      min-height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* NUVENS */
+    .clouds { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+    .cloud { position: absolute; background: white; border-radius: 3.125rem; opacity: 0.85; }
+    .cloud::before, .cloud::after { content: ''; position: absolute; background: white; border-radius: 50%; }
+    .c1 { width: 7.5rem; height: 2.5rem; top: 8%; left: 5%; animation: float1 20s linear infinite; }
+    .c1::before { width: 3.75rem; height: 3.75rem; top: -1.875rem; left: .9375rem; }
+    .c1::after  { width: 2.8125rem; height: 2.8125rem; top: -1.25rem; left: 3.4375rem; }
+    .c2 { width: 5.625rem; height: 2rem; top: 15%; left: 60%; animation: float1 28s linear infinite; }
+    .c2::before { width: 2.8125rem; height: 2.8125rem; top: -1.375rem; left: .75rem; }
+    .c2::after  { width: 2.1875rem; height: 2.1875rem; top: -.9375rem; left: 2.625rem; }
+    .c3 { width: 8.75rem; height: 2.8125rem; top: 5%; left: 80%; animation: float2 24s linear infinite; }
+    .c3::before { width: 4.375rem; height: 4.375rem; top: -2.1875rem; left: 1.125rem; }
+    .c3::after  { width: 3.4375rem; height: 3.4375rem; top: -1.5625rem; left: 4.0625rem; }
+    @keyframes float1 { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(1.875rem); } }
+    @keyframes float2 { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-1.5625rem); } }
+
+    .screen {
+      display: none;
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+    }
+    .screen.active { display: flex; }
+
+    /* TELA INICIAL */
+    #screen-welcome { background: none; overflow: hidden; }
+    .welcome-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: linear-gradient(180deg, #3A9FCC 55%, #3DB05A 55%); }
+    .welcome-bg img { width: 100%; height: 100%; object-fit: cover; object-position: center; filter: blur(4px) brightness(0.75) saturate(1.1); transform: scale(1.05); }
+    .welcome-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; margin-top: clamp(8rem, 40vw, 18.75rem); }
+    .capi-img-wrap { width: clamp(11.875rem, 88vw, 15.625rem); height: clamp(11.875rem, 88vw, 15.625rem); display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: .875rem; animation: capiIdle 3s ease-in-out infinite, bounceIn 1s ease-out; filter: drop-shadow(0 .5rem 1.25rem rgba(0,0,0,.2)); }
+    .capi-img-wrap img { width: 100%; height: 170%; }
+    .welcome-title { font-size: clamp(2.2rem, 7vw, 4rem); font-weight: 900; color: var(--white); text-shadow: .125rem .125rem 0 #000, -.125rem -.125rem 0 #000, .125rem -.125rem 0 #000, -.125rem .125rem 0 #000, 0 .25rem .75rem rgba(0,0,0,.6); text-align: center; line-height: 1.1; margin-bottom: .625rem; animation: bounceIn .8s ease-out; }
+    .welcome-sub { font-size: clamp(1rem, 3.5vw, 1.5rem); color: #E0F4FF; text-shadow: .0625rem .0625rem .375rem rgba(0,0,0,.9); margin-bottom: 1.875rem; text-align: center; animation: bounceIn .9s ease-out; }
+    #btn-start { background: var(--yellow); border: none; border-radius: 3.125rem; padding: 1.125rem 3.125rem; font-family: 'Baloo 2', cursive; font-size: clamp(1.2rem, 4vw, 1.8rem); font-weight: 800; color: var(--brown-dark); cursor: pointer; box-shadow: 0 .375rem 0 #C8A400, 0 .625rem 1.25rem rgba(0,0,0,.2); transition: transform .1s, box-shadow .1s; animation: pulseBtn 2s ease-in-out infinite; }
+    #btn-start:hover { transform: translateY(-.1875rem); }
+    #btn-start:active { transform: translateY(.1875rem); box-shadow: 0 .1875rem 0 #C8A400; }
+
+    /* NOME */
+    #screen-name { background: linear-gradient(180deg, #6EC6E6 60%, #3DB05A 60%); }
+    .name-card { background: var(--cream); border-radius: 1.875rem; padding: 2rem 2.5rem; text-align: center; box-shadow: 0 .625rem 2.5rem rgba(0,0,0,.2); max-width: 30rem; width: 100%; animation: slideUp .5s ease-out; }
+    .name-card h2 { font-size: clamp(1.3rem, 5vw, 1.8rem); font-weight: 800; color: var(--brown-dark); margin-bottom: .375rem; }
+    .optional-hint { font-size: clamp(.78rem, 2.5vw, .92rem); color: #9A7050; background: #FFF0D0; border-radius: .75rem; padding: .4375rem .875rem; margin-bottom: 1.25rem; display: inline-block; line-height: 1.4; }
+    .field-group { text-align: left; margin-bottom: .875rem; }
+    .field-label { display: block; font-size: clamp(.82rem, 2.5vw, .95rem); font-weight: 800; color: var(--brown-dark); margin-bottom: .3125rem; }
+    .form-input { width: 100%; padding: .8125rem 1.125rem; border: .1875rem solid #C8A87A; border-radius: 1rem; font-family: 'Baloo 2', cursive; font-size: clamp(.95rem, 3vw, 1.1rem); font-weight: 600; color: var(--brown-dark); background: white; outline: none; transition: border-color .2s, box-shadow .2s; }
+    .form-input:focus { border-color: var(--orange); box-shadow: 0 0 0 .1875rem rgba(255,140,66,.2); }
+    .form-input.field-invalid { border-color: var(--wrong); box-shadow: 0 0 0 .1875rem rgba(232,64,64,.2); animation: wrongShake .4s ease; }
+    .field-error { background: #FFE8E8; border: .125rem solid var(--wrong); border-radius: .875rem; padding: .625rem 1rem; font-size: clamp(.82rem, 2.5vw, .95rem); font-weight: 700; color: #9B1C1C; margin-bottom: .875rem; }
+    .form-divider { border: none; border-top: .125rem dashed #D4B896; margin: 1rem 0; }
+    .btn-primary { background: var(--orange); border: none; border-radius: 3.125rem; padding: .875rem 2.5rem; cursor: pointer; font-family: 'Baloo 2', cursive; font-size: clamp(1rem, 3.5vw, 1.3rem); font-weight: 800; color: white; box-shadow: 0 .3125rem 0 #C05A20, 0 .5rem 1.25rem rgba(0,0,0,.15); transition: transform .1s, box-shadow .1s; display: inline-block; }
+    .btn-primary:hover { transform: translateY(-.125rem); }
+    .btn-primary:active { transform: translateY(.125rem); box-shadow: 0 .1875rem 0 #C05A20; }
+
+    /* MAPA */
+    #screen-map { background: linear-gradient(180deg, #6EC6E6 55%, #3DB05A 55%); }
+    .map-intro { background: var(--cream); border-radius: 1.875rem; padding: 1.875rem 2.1875rem; max-width: 35rem; width: 100%; text-align: center; box-shadow: 0 .625rem 2.5rem rgba(0,0,0,.2); animation: bounceIn .6s ease-out; }
+    .map-intro h2 { font-size: clamp(1.2rem, 4.5vw, 1.7rem); font-weight: 800; color: var(--brown-dark); margin-bottom: .375rem; }
+    .map-intro p  { font-size: clamp(.95rem, 3vw, 1.15rem); color: #7A5030; margin-bottom: 1.25rem; }
+    .map-zones { display: flex; gap: .625rem; justify-content: center; margin-bottom: 1.25rem; flex-wrap: wrap; }
+    .zone-badge { border-radius: 1rem; padding: .625rem 1.125rem; font-size: clamp(.85rem, 2.5vw, 1rem); font-weight: 800; display: flex; flex-direction: column; align-items: center; gap: .25rem; min-width: 6.25rem; }
+    .zone-badge .zone-icon { font-size: 1.8rem; }
+    .zone-easy   { background: #D4EFDF; color: #1E7F40; border: .1875rem solid #3DB05A; }
+    .zone-medium { background: #FEF3C7; color: #92600A; border: .1875rem solid #F59E0B; }
+    .zone-hard   { background: #FDE8E8; color: #9B1C1C; border: .1875rem solid #E84040; }
+    .rules-box { background: #FEF3C7; border-radius: 1rem; padding: .65rem 1rem; margin-bottom: 1rem; font-size: clamp(.8rem, 2.5vw, .95rem); font-weight: 700; color: #92600A; line-height: 1.6; }
+
+    /* COUNTDOWN */
+    #screen-countdown { background: linear-gradient(135deg, #4AADE0, #3DB05A); }
+    .countdown-display { font-size: clamp(6rem, 20vw, 12rem); font-weight: 900; color: white; text-shadow: 0 .5rem 2rem rgba(0,0,0,.4); animation: countPop .8s ease-out; line-height: 1; }
+    .countdown-label { font-size: clamp(1.2rem, 4vw, 2rem); color: rgba(255,255,255,.85); font-weight: 700; margin-top: .5rem; }
+    @keyframes countPop { 0% { transform: scale(2); opacity: 0; } 50% { transform: scale(.9); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
+    /* JOGO */
+    #screen-game { padding: 0; justify-content: flex-start; }
+    .game-scene { width: 100%; height: 100vh; max-height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .game-scene-bg { position: absolute; inset: 0; z-index: 0; background-size: cover; background-position: center; background-repeat: no-repeat; filter: blur(6px) brightness(0.65) saturate(1.2); transform: scale(1.06); transition: background-image .6s ease; }
+    .game-scene-overlay { position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.1) 40%, rgba(0,0,0,.35) 100%); }
+    #game-header, .capi-area, #answers-area, #timer-row { position: relative; z-index: 2; }
+
+    #game-header { display: flex; align-items: center; justify-content: space-between; padding: .6rem 1rem; background: rgba(0,0,0,.28); backdrop-filter: blur(.375rem); flex-shrink: 0; }
+    .progress-text { font-size: clamp(.85rem, 3vw, 1.1rem); font-weight: 800; color: white; }
+    .progress-bar-wrap { flex: 1; margin: 0 .75rem; background: rgba(255,255,255,.3); border-radius: 1.25rem; height: .75rem; overflow: hidden; }
+    #progress-bar-fill { height: 100%; background: var(--yellow); border-radius: 1.25rem; transition: width .5s ease; box-shadow: 0 0 .5rem rgba(255,215,0,.6); }
+    .score-display { font-size: clamp(.85rem, 3vw, 1.1rem); font-weight: 800; color: white; white-space: nowrap; }
+
+    /* TIMER */
+    #timer-row { display: flex; align-items: center; gap: .5rem; padding: .3rem 1rem .1rem; flex-shrink: 0; }
+    #timer-icon { font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
+    #timer-bar-wrap { flex: 1; height: .7rem; background: rgba(255,255,255,.25); border-radius: 1rem; overflow: hidden; border: .125rem solid rgba(255,255,255,.3); }
+    #timer-bar-fill { height: 100%; width: 100%; border-radius: 1rem; background: linear-gradient(90deg, #FFD93D, #FF8C42); transition: width .1s linear, background .5s ease; box-shadow: 0 0 .4rem rgba(255,200,0,.7); }
+    #timer-bar-fill.timer-low { background: linear-gradient(90deg, #FF5252, #E84040); box-shadow: 0 0 .5rem rgba(232,64,64,.9); }
+    #timer-pts-label { font-size: clamp(.75rem, 2.5vw, .9rem); font-weight: 900; color: white; white-space: nowrap; min-width: 4.2rem; text-align: right; text-shadow: 0 .1rem .4rem rgba(0,0,0,.5); }
+    #timer-countdown { font-size: clamp(.7rem, 2.2vw, .85rem); font-weight: 900; color: rgba(255,255,255,.85); white-space: nowrap; min-width: 2.8rem; text-align: left; text-shadow: 0 .1rem .4rem rgba(0,0,0,.5); }
+    #timer-countdown.countdown-low { color: #FF8080; }
+
+    @keyframes screenPulse { 0%, 100% { box-shadow: inset 0 0 0 0 rgba(232,64,64,0); } 50% { box-shadow: inset 0 0 4rem 1rem rgba(232,64,64,.18); } }
+    .game-scene.timer-urgent { animation: screenPulse 1.2s ease-in-out infinite; }
+
+    /* TIMEOUT */
+    #timeout-overlay { display: none; position: fixed; inset: 0; z-index: 400; align-items: center; justify-content: center; background: rgba(0,0,0,.55); }
+    #timeout-overlay.active { display: flex; }
+    .timeout-box { background: #fff; border-radius: 1.5rem; padding: 1.5rem 2rem; text-align: center; box-shadow: 0 .5rem 2rem rgba(0,0,0,.35); animation: bounceIn .4s ease-out; }
+    .timeout-box .to-icon { font-size: 3rem; }
+    .timeout-box h3 { font-size: 1.4rem; font-weight: 900; color: #9B1C1C; margin: .4rem 0 .25rem; }
+    .timeout-box p  { font-size: .95rem; color: #7A5030; font-weight: 700; }
+
+    #penalty-flash { position: fixed; inset: 0; z-index: 500; background: rgba(232,64,64,0); pointer-events: none; transition: background .15s; }
+    #penalty-flash.active { background: rgba(232,64,64,.3); }
+
+    .pts-pop { position: fixed; font-family: 'Baloo 2', cursive; font-weight: 900; font-size: 1.8rem; pointer-events: none; z-index: 600; animation: ptsFly 1.2s ease-out forwards; }
+    @keyframes ptsFly { 0% { opacity: 1; transform: translateY(0) scale(1); } 60% { opacity: 1; transform: translateY(-3rem) scale(1.2); } 100% { opacity: 0; transform: translateY(-5rem) scale(.8); } }
+
+    /* CAPI */
+    .capi-area { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: .75rem 1rem; gap: .75rem; overflow: hidden; }
+    #capi-svg-wrap { flex-shrink: 0; width: clamp(4.5rem, 18vw, 8.75rem); filter: drop-shadow(.1875rem .375rem .5rem rgba(0,0,0,.35)); animation: capiIdle 3s ease-in-out infinite; }
+    #capi-svg-wrap img { width: 100%; height: auto; display: block; animation: capiStateIn .3s ease-out; }
+    @keyframes capiStateIn { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes capiIdle { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-.4rem) rotate(1deg); } }
+    .capi-happy-anim { animation: capiHappy .6s ease-in-out 3 !important; }
+    .capi-sad-anim   { animation: capiSad .5s ease-in-out !important; }
+    @keyframes capiHappy { 0%, 100% { transform: scale(1) rotate(0); } 25% { transform: scale(1.12) rotate(-5deg); } 75% { transform: scale(1.12) rotate(5deg); } }
+    @keyframes capiSad   { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-.5rem); } 75% { transform: translateX(.5rem); } }
+
+    /* BOLHA */
+    .speech-bubble { flex: 1; background: var(--white); border-radius: 1.25rem; padding: .75rem 1rem; position: relative; box-shadow: 0 .25rem 1.25rem rgba(0,0,0,.25); max-width: 22rem; display: flex; align-items: flex-start; gap: .4rem; overflow: hidden; }
+    .bubble-inner { flex: 1; }
+    .speech-bubble::before { content: ''; position: absolute; left: -.8rem; top: 50%; transform: translateY(-50%); border: .8rem solid transparent; border-right-color: var(--white); border-left: 0; }
+    .bubble-state-label { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; margin-bottom: .25rem; opacity: .7; }
+    #bubble-text { font-size: clamp(.8rem, 2.8vw, 1.05rem); font-weight: 700; color: var(--text-dark); line-height: 1.3; animation: bubbleTextIn .25s ease-out; }
+    @keyframes bubbleTextIn { from { opacity: 0; transform: translateY(.3rem); } to { opacity: 1; transform: translateY(0); } }
+    .state-asking  .bubble-state-label { color: var(--sky-dark); }
+    .state-hint    .bubble-state-label { color: var(--orange); }
+    .state-correct .bubble-state-label { color: var(--correct); }
+    .state-wrong   .bubble-state-label { color: var(--wrong); }
+    .state-waiting .bubble-state-label { color: #9A7050; }
+    .state-timeout .bubble-state-label { color: #9B1C1C; }
+
+    /* BOTÃO DE ÁUDIO DA PERGUNTA */
+    #btn-audio-question { display: none; flex-shrink: 0; width: 2.6rem; height: 2.6rem; border-radius: 50%; border: none; background: var(--sky); box-shadow: 0 .2rem 0 #4AADE0, 0 .3rem .8rem rgba(0,0,0,.2); font-size: 1.3rem; cursor: pointer; transition: transform .1s; line-height: 1; align-self: flex-start; }
+    #btn-audio-question:active { transform: scale(.9); }
+    #btn-audio-question.playing { background: var(--orange); animation: pulseBtn .6s ease-in-out infinite; }
+
+    /* ÁREA DE ALTERNATIVAS */
+    #answers-area { position: relative; width: 100%; height: clamp(13rem, 40vw, 22rem); flex-shrink: 0; z-index: 2; pointer-events: none; }
+
+    .answer-card { position: absolute; pointer-events: all; width: clamp(140px, 32vw, 300px); background: rgba(255,254,245,.95); border-radius: 1.25rem; overflow: hidden; cursor: pointer; border: .28rem solid transparent; box-shadow: 0 .375rem 0 rgba(0,0,0,.22), 0 .75rem 2rem rgba(0,0,0,.28); transition: transform .15s ease, box-shadow .15s ease, border-color .2s; backdrop-filter: blur(6px); bottom: clamp(.5rem, 2vh, 1rem); }
+
+    .card-wrap { position: absolute; bottom: clamp(.5rem, 2vh, 1rem); display: flex; align-items: center; gap: .6rem; pointer-events: all; }
+    #wrap-0 { left: clamp(.5rem, 3vw, 4rem); flex-direction: row; }
+    #wrap-1 { right: clamp(.5rem, 3vw, 4rem); flex-direction: row-reverse; }
+    #card-0, #card-1 { position: static; bottom: auto; left: auto; right: auto; }
+
+    .answer-card:hover:not(.disabled) { transform: translateY(-.4rem) scale(1.06); box-shadow: 0 .75rem 0 rgba(0,0,0,.15), 0 1.25rem 2.5rem rgba(0,0,0,.22); }
+    .answer-card:active:not(.disabled) { transform: scale(.97); }
+    .answer-card.disabled { pointer-events: none; }
+
+    .answer-img { width: 100%; aspect-ratio: 1 / 1; object-fit: contain; object-position: center; background: #F5EDD8; display: block; padding: .5rem; transition: transform .25s ease, filter .25s; }
+    .answer-card:hover:not(.disabled) .answer-img { transform: scale(1.06); }
+
+    .answer-label { padding: .4rem .5rem .45rem; font-size: clamp(.82rem, 2.4vw, 1rem); font-weight: 800; text-align: center; background: rgba(255,254,245,.95); color: var(--text-dark); border-top: .1rem solid rgba(0,0,0,.07); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background .2s; }
+
+    .answer-tag { display: none; position: absolute; top: .45rem; right: .5rem; font-size: 1.8rem; line-height: 1; background: white; border-radius: 50%; padding: .1rem; box-shadow: 0 .1rem .5rem rgba(0,0,0,.25); z-index: 2; }
+
+    .answer-kbd { position: absolute; top: .45rem; left: .5rem; font-size: .58rem; font-weight: 800; background: rgba(0,0,0,.3); border-radius: .35rem; padding: .1rem .35rem; color: rgba(255,255,255,.9); letter-spacing: .04em; z-index: 2; }
+
+    .answer-card.correct-reveal { border-color: var(--correct); animation: correctPop .5s ease; }
+    .answer-card.correct-reveal .answer-img   { filter: brightness(1.08) saturate(1.2); }
+    .answer-card.correct-reveal .answer-label { background: #D4EFDF; color: #1E7F40; }
+    .answer-card.correct-reveal .answer-tag   { display: block; }
+
+    .answer-card.wrong-reveal { border-color: var(--wrong); animation: wrongShake .5s ease; }
+    .answer-card.wrong-reveal .answer-img   { filter: brightness(.65) saturate(.5); }
+    .answer-card.wrong-reveal .answer-label { background: #FFDEDE; color: #9B1C1C; }
+    .answer-card.wrong-reveal .answer-tag   { display: block; }
+
+    .answer-card.timeout-reveal { border-color: #9C27B0; }
+    .answer-card.timeout-reveal .answer-img   { filter: brightness(.8) saturate(.7); }
+    .answer-card.timeout-reveal .answer-label { background: #F3E8FF; color: #6A1B9A; }
+    .answer-card.timeout-reveal .answer-tag   { display: block; }
+
+    /* BOTÃO DE ÁUDIO DAS ALTERNATIVAS */
+    .btn-audio-answer { display: none; flex-shrink: 0; width: clamp(2.8rem, 7vw, 4rem); height: clamp(2.8rem, 7vw, 4rem); border-radius: 50%; border: none; background: #FFD93D; box-shadow: 0 .3rem 0 #C8A400, 0 .4rem 1rem rgba(0,0,0,.25); font-size: clamp(1.3rem, 3.5vw, 2rem); cursor: pointer; pointer-events: all; align-items: center; justify-content: center; transition: transform .1s, box-shadow .1s; line-height: 1; }
+    .btn-audio-answer:active { transform: scale(.92); box-shadow: 0 .1rem 0 #C8A400; }
+    .btn-audio-answer.playing { background: #FF8C42; animation: pulseBtn .6s ease-in-out infinite; }
+
+    /* BOTÃO PRÓXIMA */
+    #btn-next { display: none; position: absolute; bottom: clamp(.5rem, 2vh, 1rem); left: 50%; transform: translateX(-50%); z-index: 4; white-space: nowrap; pointer-events: all; background: var(--yellow); border: none; border-radius: 3.125rem; padding: .65rem 1.6rem; cursor: pointer; font-family: 'Baloo 2', cursive; font-size: clamp(.85rem, 3vw, 1.1rem); font-weight: 800; color: var(--brown-dark); box-shadow: 0 .3rem 0 #C8A400, 0 .5rem 1.5rem rgba(0,0,0,.25); animation: pulseBtn 1.5s ease-in-out infinite; transition: transform .1s; }
+    #btn-next:hover { transform: translateX(-50%) translateY(-.15rem); }
+    #btn-next:active { transform: translateX(-50%) translateY(.1rem); box-shadow: 0 .15rem 0 #C8A400; }
+
+    /* TRANSIÇÃO ENTRE FASES */
+    #screen-transition { background: linear-gradient(135deg, #6EC6E6, #3DB05A); }
+    .transition-card { background: white; border-radius: 2.25rem; padding: 2.5rem 2.8125rem; text-align: center; max-width: 30rem; width: 100%; box-shadow: 0 .9375rem 3.125rem rgba(0,0,0,.2); animation: bounceIn .7s cubic-bezier(.36,.07,.19,.97); }
+    .transition-card .big-emoji { font-size: 4rem; margin-bottom: .625rem; animation: spinOnce 1s linear; }
+    .transition-card h2 { font-size: clamp(1.4rem, 5vw, 2rem); font-weight: 900; color: var(--brown-dark); margin-bottom: .625rem; }
+    .transition-card p  { font-size: clamp(.95rem, 3vw, 1.15rem); color: #7A5030; margin-bottom: 1rem; }
+    .zone-next-info { display: flex; align-items: center; justify-content: center; gap: .5rem; background: #FEF3C7; border-radius: 1rem; padding: .75rem 1.25rem; margin-bottom: 1.375rem; }
+    .zone-next-info span { font-size: 1.8rem; }
+    .zone-next-info p { margin: 0; font-size: 1rem; font-weight: 800; color: #92600A; }
+    .transition-score-mini { display: flex; justify-content: center; gap: .9rem; background: #F0FFF4; border: .15rem solid #3DB05A; border-radius: 1rem; padding: .65rem 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .tsm-item { display: flex; flex-direction: column; align-items: center; }
+    .tsm-num { font-size: 1.5rem; font-weight: 900; color: var(--brown-dark); line-height: 1; }
+    .tsm-lbl { font-size: .68rem; font-weight: 800; color: #7A5030; text-transform: uppercase; letter-spacing: .04em; }
+
+    /* FIM */
+    #screen-end { background: linear-gradient(135deg, #FFD93D 0%, #FF8C42 50%, #FF5252 100%); }
+    .end-card { background: white; border-radius: 2.25rem; padding: 1.75rem; text-align: center; max-width: 32rem; width: 100%; box-shadow: 0 .9375rem 3.125rem rgba(0,0,0,.25); animation: bounceIn .7s cubic-bezier(.36,.07,.19,.97); }
+    .end-card .big-emoji { font-size: 3.5rem; margin-bottom: .3rem; animation: capiHappy 1s ease-in-out 3; }
+    .end-card h2 { font-size: clamp(1.2rem, 5vw, 1.8rem); font-weight: 900; color: var(--brown-dark); margin-bottom: .25rem; }
+    .end-player-info { font-size: .82rem; color: #9A7050; font-weight: 700; margin-bottom: .3rem; background: #FFF0D0; border-radius: .625rem; padding: .28rem .8rem; display: none; }
+    .end-score-wrap { margin: .5rem 0 .25rem; }
+    .end-score-big { font-size: clamp(2.8rem, 10vw, 4.5rem); font-weight: 900; color: var(--orange); line-height: 1; }
+    .end-score-label { font-size: .85rem; color: #7A5030; font-weight: 600; }
+    .stars-row { font-size: 1.8rem; margin: .3rem 0 .5rem; letter-spacing: .2rem; }
+    .end-breakdown { display: flex; justify-content: center; gap: .75rem; margin: .3rem 0 .6rem; flex-wrap: wrap; }
+    .breakdown-item { display: flex; flex-direction: column; align-items: center; background: #FFF5E0; border-radius: 1rem; padding: .45rem .8rem; min-width: 5rem; border: .15rem solid #E0C898; }
+    .breakdown-num { font-size: 1.4rem; font-weight: 900; color: var(--brown-dark); line-height: 1.1; }
+    .breakdown-lbl { font-size: .65rem; font-weight: 800; color: #9A7050; text-transform: uppercase; letter-spacing: .04em; }
+    .breakdown-item.hi { background: #D4EFDF; border-color: #3DB05A; }
+    .breakdown-item.hi .breakdown-num { color: #1E7F40; }
+    .breakdown-item.lo { background: #FDE8E8; border-color: #E84040; }
+    .breakdown-item.lo .breakdown-num { color: #9B1C1C; }
+    .end-msg { font-size: clamp(.85rem, 2.8vw, .95rem); color: #7A5030; margin-bottom: .85rem; line-height: 1.4; }
+
+    /* CONFETTI */
+    #confetti-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; overflow: hidden; }
+    .confetti-piece { position: absolute; width: .75rem; height: .75rem; border-radius: .125rem; animation: confettiFall linear forwards; }
+    @keyframes confettiFall { 0% { transform: translateY(-1.25rem) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+
+    @keyframes bounceIn  { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 80% { transform: scale(.95); } 100% { transform: scale(1); } }
+    @keyframes slideUp   { from { transform: translateY(2.5rem); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes spinOnce  { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+    @keyframes correctPop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    @keyframes wrongShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-.75rem); } 40% { transform: translateX(.75rem); } 60% { transform: translateX(-.5rem); } 80% { transform: translateX(.5rem); } }
+    @keyframes pulseBtn { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+
+    @media (max-width: 26.875rem) {
+      .name-card, .map-intro { padding: 1.25rem 1rem; }
+      #capi-svg-wrap { width: clamp(3.5rem, 16vw, 5rem); }
+      #bubble-text { font-size: clamp(.75rem, 3.5vw, .95rem); }
+      .answer-card { width: clamp(120px, 44vw, 180px); }
+    }
+    @media (max-width: 22.5rem) {
+      #capi-svg-wrap { width: 3.25rem; }
+      .capi-area { padding: .5rem .75rem; gap: .5rem; }
+      .speech-bubble { padding: .5rem .75rem; border-radius: 1rem; }
+    }
+    @media (max-height: 31.25rem) {
+      .capi-area { padding: .25rem .75rem; }
+      #capi-svg-wrap { width: 3.5rem; }
+      .speech-bubble { min-height: unset; padding: .4rem .75rem; }
+      #bubble-text { font-size: .78rem; }
+      #answers-area { height: clamp(9rem, 34vw, 14rem); }
+      #btn-next { padding: .35rem 1.2rem; font-size: .8rem; }
+      .welcome-content { margin-top: clamp(2rem, 15vw, 5rem); }
+    }
+    @media (hover: none) and (pointer: coarse) {
+      .btn-primary, #btn-start, #btn-next { min-height: 2.75rem; }
+      .answer-kbd { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="clouds">
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="cloud c3"></div>
+</div>
+<div id="confetti-wrap"></div>
+<div id="penalty-flash"></div>
+
+<div id="timeout-overlay">
+  <div class="timeout-box">
+    <div class="to-icon">⏰</div>
+    <h3>Tempo esgotado!</h3>
+    <p>Essa pergunta foi perdida.<br>Vamos para a próxima!</p>
+  </div>
+</div>
+
+<div class="screen active" id="screen-welcome">
+  <div class="welcome-bg"><img id="welcome-bg-img" src="" alt="Fundo"/></div>
+  <div class="welcome-content">
+    <div style="position:absolute;z-index:-1;top:-75%;" class="capi-img-wrap">
+      <img src="IMAGENS-webp/CAPPY-CAPIVARA/cappy-pergunta.webp" alt="Capi">
+    </div>
+    <h1 class="welcome-title">Missão no<br>Vale!</h1>
+    <p class="welcome-sub">Um quiz divertido com a Capi, a capivara 🌟</p>
+    <button id="btn-start">Vamos lá! 🎉</button>
+  </div>
+</div>
+
+<div class="screen" id="screen-name">
+  <div class="name-card">
+    <h2>Quem vai jogar? 🦫</h2>
+    <p class="optional-hint">💡 Opcional — mas se preencher um campo, preencha todos!</p>
+    <div class="field-group">
+      <label class="field-label" for="input-nome">👤 Nome</label>
+      <input type="text" id="input-nome" class="form-input" placeholder="Seu nome" maxlength="30" autocomplete="off"/>
+    </div>
+    <div class="field-group">
+      <label class="field-label" for="input-escola">🏫 Escola</label>
+      <input type="text" id="input-escola" class="form-input" placeholder="Nome da sua escola" maxlength="60" autocomplete="off"/>
+    </div>
+    <div class="field-group">
+      <label class="field-label" for="input-idade">🎂 Idade</label>
+      <input type="number" id="input-idade" class="form-input" placeholder="Sua idade" min="3" max="18" autocomplete="off"/>
+    </div>
+    <div class="field-error" id="form-error" style="display:none">⚠️ Preencha todos os campos ou deixe todos em branco!</div>
+    <hr class="form-divider"/>
+    <button class="btn-primary" id="btn-name-ok">Continuar ➡️</button>
+  </div>
+</div>
+
+<div class="screen" id="screen-map">
+  <div class="map-intro">
+    <div style="font-size:3rem;margin-bottom:.5rem;">🗺️</div>
+    <h2 id="map-greeting">Oi! Vamos explorar Brusque!</h2>
+    <p>3 fases, 15 perguntas! Responda rápido para ganhar mais pontos!</p>
+    <div class="map-zones">
+      <div class="zone-badge zone-easy"><span class="zone-icon">🌿</span><span>Fácil</span><small>5 perguntas</small></div>
+      <div class="zone-badge zone-medium"><span class="zone-icon">🎪</span><span>Médio</span><small>5 perguntas</small></div>
+      <div class="zone-badge zone-hard"><span class="zone-icon">🏙️</span><span>Difícil</span><small>5 perguntas</small></div>
+    </div>
+    <div class="rules-box">
+      ⚡ Resposta rápida = até <strong>100 pontos</strong>!<br>
+      ⏱️ Você tem <strong>2 minutos</strong> por pergunta — quanto mais devagar, menos pontos!<br>
+      ❌ Errou ou o tempo acabou? A pergunta é <strong>perdida</strong> e você segue para a próxima!
+    </div>
+    <button class="btn-primary" id="btn-map-start">Começar! 🚀</button>
+  </div>
+</div>
+
+<div class="screen" id="screen-countdown">
+  <div class="countdown-display" id="countdown-num">3</div>
+  <div class="countdown-label" id="countdown-label">Prepare-se!</div>
+</div>
+
+<div class="screen" id="screen-game">
+  <div class="game-scene" id="game-scene">
+    <div class="game-scene-bg" id="game-scene-bg"></div>
+    <div class="game-scene-overlay"></div>
+
+    <div id="game-header">
+      <span class="progress-text" id="q-label">1/15</span>
+      <div class="progress-bar-wrap"><div id="progress-bar-fill" style="width:6.67%"></div></div>
+      <span class="score-display">⭐ <span id="score-num">0</span></span>
+    </div>
+
+    <div id="timer-row">
+      <span id="timer-icon">⏱️</span>
+      <span id="timer-countdown">2:00</span>
+      <div id="timer-bar-wrap"><div id="timer-bar-fill"></div></div>
+      <span id="timer-pts-label">100 pts</span>
+    </div>
+
+    <div class="capi-area">
+      <div id="capi-svg-wrap"></div>
+      <div class="speech-bubble state-asking" id="speech-bubble">
+        <div class="bubble-inner">
+          <div class="bubble-state-label" id="bubble-label">Pergunta</div>
+          <div id="bubble-text">Carregando...</div>
+        </div>
+        <button id="btn-audio-question" onclick="playQuestionAudio()" title="Ouvir pergunta">🔊</button>
+      </div>
+    </div>
+
+    <div id="answers-area">
+      <div class="card-wrap" id="wrap-0">
+        <div class="answer-card" id="card-0" onclick="handleAnswer(0)">
+          <img class="answer-img" id="img-0" src="" alt="resposta A" onerror="this.src='https://placehold.co/220x220/E8D5B8/9A7050?text=?'">
+          <div class="answer-label" id="label-0">Opção A</div>
+          <span class="answer-tag" id="tag-0"></span>
+          <span class="answer-kbd">tecla 1</span>
+        </div>
+        <button class="btn-audio-answer" id="audio-btn-0" onclick="playAnswerAudio(0)" title="Ouvir opção">🔊</button>
+      </div>
+
+      <div class="card-wrap" id="wrap-1">
+        <div class="answer-card" id="card-1" onclick="handleAnswer(1)">
+          <img class="answer-img" id="img-1" src="" alt="resposta B" onerror="this.src='https://placehold.co/220x220/E8D5B8/9A7050?text=?'">
+          <div class="answer-label" id="label-1">Opção B</div>
+          <span class="answer-tag" id="tag-1"></span>
+          <span class="answer-kbd">tecla 2</span>
+        </div>
+        <button class="btn-audio-answer" id="audio-btn-1" onclick="playAnswerAudio(1)" title="Ouvir opção">🔊</button>
+      </div>
+
+      <button id="btn-next" onclick="nextQuestion()">Próxima pergunta ➡️</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screen-transition">
+  <div class="transition-card">
+    <div class="big-emoji" id="transition-emoji">🎉</div>
+    <h2 id="transition-title">Fase Concluída!</h2>
+    <p id="transition-msg">Você foi incrível!</p>
+    <div class="transition-score-mini">
+      <div class="tsm-item"><div class="tsm-num" id="tsm-pts">0</div><div class="tsm-lbl">pontos</div></div>
+      <div class="tsm-item"><div class="tsm-num" id="tsm-first">0</div><div class="tsm-lbl">acertadas ⚡</div></div>
+      <div class="tsm-item"><div class="tsm-num" id="tsm-miss">0</div><div class="tsm-lbl">perdidas ❌</div></div>
+    </div>
+    <div class="zone-next-info" id="zone-next-info"><span>🎪</span><p>Próximo: Nível Médio!</p></div>
+    <button class="btn-primary" id="btn-transition-next">Continuar ➡️</button>
+  </div>
+</div>
+
+<div class="screen" id="screen-end">
+  <div class="end-card">
+    <div class="big-emoji">🦫</div>
+    <h2 id="end-title">Parabéns!</h2>
+    <div class="end-player-info" id="end-player-info"></div>
+    <div class="end-score-wrap">
+      <div class="end-score-big"><span id="end-score">0</span></div>
+      <div class="end-score-label">pontos no total</div>
+    </div>
+    <div class="stars-row" id="end-stars">⭐⭐⭐</div>
+    <div class="end-breakdown">
+      <div class="breakdown-item hi"><div class="breakdown-num" id="bd-first">0</div><div class="breakdown-lbl">acertadas ⚡</div></div>
+      <div class="breakdown-item lo"><div class="breakdown-num" id="bd-miss">0</div><div class="breakdown-lbl">perdidas ❌</div></div>
+    </div>
+    <p class="end-msg" id="end-msg">Você é um expert em Brusque!</p>
+    <button class="btn-primary" onclick="restartGame()">Jogar de novo! 🔄</button>
+  </div>
+</div>
+
+<script>
+
+const CAPI_IMG = {
+  asking:  'IMAGENS-webp/CAPPY-CAPIVARA/cappy-pergunta.webp',
+  waiting: 'IMAGENS-webp/CAPPY-CAPIVARA/cappy-erro.webp',
+  hint:    'IMAGENS-webp/CAPPY-CAPIVARA/cappy-explicação.webp',
+  correct: 'IMAGENS-webp/CAPPY-CAPIVARA/cappy-pergunta.webp',
+};
+
+const WELCOME_IMG = 'IMAGENS-webp/MAPA/mapa-k.webp';
+const PHASE_1_IMG = 'IMAGENS-webp/CENARIO/CENÁRIO-2.webp';
+const PHASE_2_IMG = 'IMAGENS-webp/CENARIO/CENÁRIO-3.webp';
+const PHASE_3_IMG = 'IMAGENS-webp/CENARIO/CENÁRIO-4.webp';
+
+const PHASE_IMG = {
+  block1: PHASE_1_IMG,
+  block2: PHASE_2_IMG,
+  block3: PHASE_3_IMG,
+};
+
+const AUDIO_CORRETO = 'AUDIOS/banjo-e-kazooie-acerto-quiz.mp3';
+const AUDIO_ERRADO  = 'AUDIOS/myinstants.mp3';
+
+const QUESTIONS = [
+  {
+    block: 1,
+    audio: 'AUDIOS/PGT-1/P1_ENUNCIADO.m4a',
+    question: 'Passeando na Beira Rio, qual bichinho podemos encontrar?',
+    hint: 'Esse bichinho se parece muito comigo. Até podemos ser primos!',
+    info: 'Parabéns! Adoramos viver pertinho do rio para nos refrescar, alimentar e fazer nossas casinhas!',
+    answers: [
+      { label: 'Capivara', correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-1/CAPIVARA.webp', audio: 'AUDIOS/PGT-1/P1_ALT_CERTA.m4a' },
+      { label: 'Macaco',   correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-1/MACACO.webp', audio: 'AUDIOS/PGT-1/P1_ALT_ERRADA.m4a' },
+    ],
+  },
+  {
+    block: 1,
+    audio: 'AUDIOS/PGT-2/P2_ENUNCIADO.m4a',
+    question: 'Na festa Fenarreco, qual o bichinho mais famoso?',
+    hint: 'Esse bichinho faz "quack quack" e adora água!',
+    info: 'Muito bem! O marreco é o símbolo da festa e faz parte da comida típica mais famosa da cidade!',
+    answers: [
+      { label: 'Marreco',  correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-2/MARRECO.webp', audio: 'AUDIOS/PGT-2/P2_ALT_CERTA.m4a' },
+      { label: 'Elefante', correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-2/ELEFANTE.webp', audio: 'AUDIOS/PGT-2/P2_ALT_ERRADA.m4a' },
+    ],
+  },
+  {
+    block: 1,
+    audio: 'AUDIOS/PGT-3/P3_ENUNCIADO.m4a',
+    question: 'Qual desses é o mascote marreco?',
+    hint: 'Ele tem bico, é amarelo e gosta de água!',
+    info: 'Muito bem! O marreco é tipo um patinho e representa a festa da nossa cidade!',
+    answers: [
+      { label: '-',  correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-3/MARRECO.webp', audio: '' },
+      { label: '--', correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-3/ARARA.webp', audio: '' }
+    ]
+  },
+  {
+    block: 1,
+    audio: 'AUDIOS/PGT-4/P4_ENUNCIADO.m4a',
+    question: 'O que encontramos no Zoobotânico de Brusque?',
+    hint: 'Eles fazem barulhinhos e vivem na natureza!',
+    info: 'Acertou! O Zoobotânico tem vários animais e é um lugar muito legal para conhecer!',
+    answers: [
+      { label: 'Vários animaizinhos', correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-4/ANIMAIZINHOS.webp', audio: 'AUDIOS/PGT-4/P4_ALT_CERTA.m4a' },
+      { label: 'Carros de corrida',   correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-4/CARROS.webp', audio: 'AUDIOS/PGT-4/P4_ALT_ERRADA.m4a' },
+    ],
+  },
+  {
+    block: 1,
+    audio: 'AUDIOS/PGT-5/P5_ENUNCIADO.m4a',
+    question: 'O Rio Itajaí-Mirim passa por Brusque. O que tem dentro dele?',
+    hint: 'É um lugar onde os peixinhos nadam!',
+    info: 'Muito bem! O rio tem água e peixinhos que brincam e se divertem de montão!',
+    answers: [
+      { label: 'Água e peixinhos', correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-5/agua-e-peixinhos.webp', audio: 'AUDIOS/PGT-5/P5_ALT_CERTA.m4a' },
+      { label: 'Folhas e galhos',  correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-5/folhas-e-galhos.webp', audio: 'AUDIOS/PGT-5/P5_ALT_ERRADA.m4a' },
+    ],
+  },
+  {
+    block: 2,
+    audio: 'AUDIOS/PGT-6/P6_ENUNCIADO.m4a',
+    question: 'O repolho que comemos com o marreco é de qual cor?',
+    hint: 'É uma cor bem bonita, parece com a cor de uma uva!',
+    info: 'Acertou! O repolho roxo é muito usado na culinária típica e é muito gostoso!',
+    answers: [
+      { label: 'Roxo',    correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-6/ROXO.webp', audio: 'AUDIOS/PGT-6/P6_ALT_CERTA.m4a' },
+      { label: 'Laranja', correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-6/LARANJA.webp', audio: 'AUDIOS/PGT-6/P6_ALT_ERRADA.m4a' },
+    ],
+  },
+  {
+    block: 2,
+    audio: 'AUDIOS/PGT-7/P7_ENUNCIADO.m4a',
+    question: 'Dentro do pavilhão da Fenarreco, como é a música?',
+    hint: 'É música de festa, dá vontade de dançar!',
+    info: 'Isso aí! A música é alegre e animada, cheia de dança e diversão!',
+    answers: [
+      { label: 'Alegre e barulhenta', correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-7/ALEGRE.webp', audio: 'AUDIOS/PGT-7/P7_ALT_ERRADA.m4a' },
+      { label: 'Silenciosa e calma',  correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-7/SILENCIOSA.webp', audio: 'AUDIOS/PGT-7/P7_ALT_CERTA.m4a' },
+    ],
+  },
+  {
+    block: 2,
+    audio: 'AUDIOS/PGT-8/P8_ENUNCIADO.m4a',
+    question: 'A Cuca é um bolo delicioso. O que tem por cima dela?',
+    hint: 'Quando você morde faz "croc croc" e pode lembrar a areia da praia!',
+    info: 'Acertou! A farofa crocante e docinha deixa a cuca ainda mais gostosa!',
+    answers: [
+      { label: 'Farofa crocante', correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-8/FAROFA.webp', audio: 'AUDIOS/PGT-8/P8_ALT_CERTA.m4a' },
+      { label: 'Sopa de feijão',  correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-8/SOPA.webp', audio: 'AUDIOS/PGT-8/P8_ALT_ERRADA.m4a' },
+    ],
+  },
+  {
+    block: 2,
+    audio: 'AUDIOS/PGT-9/P9_ENUNCIADO.m4a',
+    question: 'Brusque é a cidade dos tecidos. Como é um tecido bem fofinho?',
+    hint: 'Dá vontade de abraçar!',
+    info: 'Acertou! Os tecidos macios são confortáveis e usados para fazer roupas bonitas de usar!',
+    answers: [
+      { label: 'Macio e suave',   correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-9/MACIO.webp', audio: 'AUDIOS/PGT-9/P9_ALT_CERTA.m4a' },
+      { label: 'Duro e espetado', correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-9/DURO.webp', audio: 'AUDIOS/PGT-9/P9_ALT_ERRADA.m4a' },
+    ],
+  },
+  {
+    block: 2,
+    audio: 'AUDIOS/PGT-10/P10_ENUNCIADO.m4a',
+    question: 'Em que lugar você iria para ver um filme bem legal?',
+    hint: 'Tem uma tela gigante para assistir e pipoca com muita manteiga!',
+    info: 'Isso mesmo! No cinema da Havan passam filmes incríveis, além da pipoca ser super gostosa!',
+    answers: [
+      { label: 'Cinema da Havan',  correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-10/CINEMA.webp', audio: 'AUDIOS/PGT-10/P10_ALT_CERTA.m4a' },
+      { label: 'Campo de futebol', correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-10/FUTEBOL.webp', audio: 'AUDIOS/PGT-10/P10_ALT_ERRADA.m4a' },
+    ],
+  },
+  {
+    block: 3,
+    audio: 'AUDIOS/PGT-11/P11_ENUNCIADO.m4a',
+    question: 'No Parque das Esculturas, as estátuas são feitas de quê?',
+    hint: 'Essas estátuas ficam no sol e na chuva e não derretem nunca!',
+    info: 'Parabéns! As esculturas são feitas de pedra, um material bem resistente que dura muitos e muitos anos!',
+    answers: [
+      { label: 'Pedra', correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-11/PEDRA.webp', audio: 'AUDIOS/PGT-11/P11_ALT_CERTA.m4a' },
+      { label: 'Areia', correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-11/AREIA.webp', audio: 'AUDIOS/PGT-11/P11_ALT_ERRADA.m4a' },
+    ],
+  },
+  {
+    block: 3,
+    audio: 'AUDIOS/PGT-12/P12_ENUNCIADO.m4a',
+    question: 'Aonde você iria para fazer um delicioso piquenique com os amigos?',
+    hint: 'Tem grama, natureza e espaço pra sentar!',
+    info: 'Muito bem! O Parque das Esculturas é perfeito para piquenique, brincar e até passear com o pet!',
+    answers: [
+      { label: 'Parque das Esculturas', correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-12/esculturas.webp', audio: 'AUDIOS/PGT-12/P12_ALT_CERTA.m4a' },
+      { label: 'Farmácia',              correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-12/farmacia.webp', audio: 'AUDIOS/PGT-12/P12_ALT_ERRADA.m4a' },
+    ],
+  },
+  {
+    block: 3,
+    audio: 'AUDIOS/PGT-13/P13_ENUNCIADO.m4a',
+    question: 'Onde podemos conhecer mais da história de Brusque?',
+    hint: 'É um lugar com objetos antigos e muito diferentes!',
+    info: 'Acertou! No museu aprendemos sobre o passado da cidade e das pessoas!',
+    answers: [
+      { label: 'Museu Arquidiocesano', correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-13/museu.webp', audio: 'AUDIOS/PGT-13/P13_ALT_ERRADA.m4a' },
+      { label: 'Havan',                correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-13/havan.webp', audio: 'AUDIOS/PGT-13/P13_ALT_CERTA.m4a' },
+    ],
+  },
+  {
+    block: 3,
+    audio: 'AUDIOS/PGT-14/P14_ENUNCIADO.m4a',
+    question: 'Qual dessas estátuas fica em Brusque? (verde, na frente de uma loja bem grande!)',
+    hint: 'É verde e fica na frente de uma loja bem grande em Brusque!',
+    info: 'Muito bem! A estátua da Havan é um ponto bem conhecido da cidade!',
+    answers: [
+      { label: 'Estátua da Havan', correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-14/estatua-da-liberdade.webp', audio: 'AUDIOS/PGT-14/P14_ALT_CERTA.m4a' },
+      { label: 'Cristo Redentor',  correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-14/cristo-redentor.webp', audio: 'AUDIOS/PGT-14/P14_ALT_ERRADA.m4a' },
+    ],
+  },
+  {
+    block: 3,
+    audio: 'AUDIOS/PGT-16/P16_ENUNCIADO.m4a',
+    question: 'Qual dessas é a Ponte Estaiada de Brusque? (tem fios grandões segurando!)',
+    hint: 'Ela tem fios grandões segurando a ponte!',
+    info: 'Muito bem! Essa é a Ponte Estaiada de Brusque, uma ponte muito bonita e diferente!',
+    answers: [
+      { label: 'Ponte Estaiada', correct: true,  img: 'IMAGENS-webp/PERGUNTAS/PGT-16/estaiada.webp', audio: 'AUDIOS/PGT-16/P16_ALT_CERTA.m4a' },
+      { label: 'Ponte comum',    correct: false, img: 'IMAGENS-webp/PERGUNTAS/PGT-16/ponte.webp', audio: 'AUDIOS/PGT-16/P16_ALT_ERRADA.m4a' },
+    ],
+  },
+];
+
+const TIMER_MAX_MS  = 120000;
+const TIMER_MAX_PTS = 100;
+const TIMER_MIN_PTS = 10;
+
+const WRONG_MSGS = [
+  'Quase! Mas a resposta certa era a outra. Vai bem na próxima!',
+  'Opa! Dessa vez não foi, mas você vai se sair bem na próxima!',
+  'Não foi dessa vez! Fica de olho na próxima pergunta!',
+  'Eita! Errou, mas tudo bem — aprender faz parte!',
+];
+
+let playerName = '', playerSchool = '', playerAge = '';
+let currentQ = 0, score = 0, firstAttemptCorrect = 0, timeoutCount = 0;
+let gameState = 'asking';
+let answersLayout = [], activeQuestions = [];
+let waitingTimer = null, timeoutTimer = null;
+let timerRAF = null, timerStart = 0, timerElapsed = 0, timerStopped = false;
+let currentAudio = null;
+
+document.getElementById('welcome-bg-img').src = WELCOME_IMG;
+
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function buildPlaythrough() {
+  activeQuestions = [
+    ...shuffleArray([...QUESTIONS.slice(0, 5)]),
+    ...shuffleArray([...QUESTIONS.slice(5, 10)]),
+    ...shuffleArray([...QUESTIONS.slice(10, 15)]),
+  ];
+}
+
+function shuffleAnswers(q) {
+  const arr = [0, 1];
+  if (Math.random() > .5) arr.reverse();
+  answersLayout = arr.map(i => q.answers[i]);
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function randomFrom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function startCountdown(onDone) {
+  showScreen('screen-countdown');
+  const numEl   = document.getElementById('countdown-num');
+  const labelEl = document.getElementById('countdown-label');
+  let count = 3;
+
+  function tick() {
+    numEl.style.animation = 'none';
+    numEl.offsetHeight;
+    numEl.style.animation = 'countPop .8s ease-out';
+
+    if (count > 0) {
+      numEl.textContent   = count;
+      labelEl.textContent = 'Prepare-se!';
+      count--;
+      setTimeout(tick, 900);
+    } else {
+      numEl.textContent   = '🚀';
+      labelEl.textContent = 'Vai!';
+      setTimeout(onDone, 700);
+    }
+  }
+  tick();
+}
+
+function updateSceneBg(block) {
+  document.getElementById('game-scene-bg').style.backgroundImage = `url('${PHASE_IMG['block' + block] || PHASE_IMG.block1}')`;
+}
+
+function setCapiState(state) {
+  document.getElementById('capi-svg-wrap').innerHTML = `<img src="${CAPI_IMG[state]}" alt="Capi" onerror="this.parentElement.innerHTML='<span style=font-size:3rem;line-height:1>🦫</span>'">`;
+}
+
+function calcPts(elapsed) {
+  return Math.round(TIMER_MIN_PTS + (TIMER_MAX_PTS - TIMER_MIN_PTS) * Math.max(0, 1 - elapsed / TIMER_MAX_MS));
+}
+
+function formatCountdown(ms) {
+  const t = Math.max(0, Math.ceil((TIMER_MAX_MS - ms) / 1000));
+  return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+}
+
+function startTimer() {
+  stopTimer();
+  timerStart = performance.now();
+  timerElapsed = 0;
+  timerStopped = false;
+  timeoutTimer = setTimeout(() => {
+    if (gameState !== 'correct') handleTimeout();
+  }, TIMER_MAX_MS);
+  tickTimer();
+}
+
+function tickTimer() {
+  if (timerStopped) return;
+  timerElapsed = performance.now() - timerStart;
+
+  const ratio = Math.max(0, 1 - timerElapsed / TIMER_MAX_MS);
+  const fill  = document.getElementById('timer-bar-fill');
+  const scene = document.getElementById('game-scene');
+
+  fill.style.width = (ratio * 100) + '%';
+  fill.classList.toggle('timer-low', ratio < .3);
+  document.getElementById('timer-countdown').classList.toggle('countdown-low', ratio < .3);
+  scene.classList.toggle('timer-urgent', ratio < .15);
+  document.getElementById('timer-countdown').textContent = formatCountdown(timerElapsed);
+  document.getElementById('timer-pts-label').textContent = calcPts(timerElapsed) + ' pts';
+
+  if (timerElapsed >= TIMER_MAX_MS) { fill.style.width = '0%'; timerStopped = true; return; }
+  timerRAF = requestAnimationFrame(tickTimer);
+}
+
+function stopTimer() {
+  if (timerRAF)     { cancelAnimationFrame(timerRAF); timerRAF = null; }
+  if (timeoutTimer) { clearTimeout(timeoutTimer); timeoutTimer = null; }
+  timerStopped = true;
+  document.getElementById('game-scene').classList.remove('timer-urgent');
+}
+
+function getCurrentPts() {
+  if (timerElapsed >= TIMER_MAX_MS) return 0;
+  return calcPts(timerElapsed);
+}
+
+function handleTimeout() {
+  if (gameState === 'correct') return;
+  stopTimer();
+  gameState = 'correct';
+  timeoutCount++;
+
+  for (let i = 0; i < 2; i++) {
+    const card = document.getElementById(`card-${i}`);
+    card.classList.add('disabled');
+    if (answersLayout[i].correct) {
+      card.classList.add('timeout-reveal');
+      document.getElementById(`tag-${i}`).textContent = '⏰';
+    }
+  }
+
+  setCapiState('waiting');
+  setBubble('timeout', '⏰ Tempo esgotado!', 'Opa! O tempo acabou. A resposta certa está marcada. Vamos para a próxima!');
+  document.getElementById('timer-pts-label').textContent = '0 pts';
+  document.getElementById('timer-countdown').textContent = '0:00';
+
+  const overlay = document.getElementById('timeout-overlay');
+  overlay.classList.add('active');
+  setTimeout(() => {
+    overlay.classList.remove('active');
+    document.getElementById('btn-next').style.display = 'block';
+  }, 2000);
+}
+
+function popPoints(pts) {
+  const el = document.createElement('div');
+  el.className = 'pts-pop';
+  el.textContent = pts > 0 ? `+${pts} pts` : '0 pts ❌';
+  el.style.cssText = `color:${pts > 0 ? '#FFD93D' : '#FF5252'};left:50%;top:42%;transform:translateX(-50%)`;
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+function penaltyFlash() {
+  const el = document.getElementById('penalty-flash');
+  el.classList.add('active');
+  setTimeout(() => el.classList.remove('active'), 300);
+}
+
+const CONFETTI_COLORS = ['#FFD93D', '#FF8C42', '#4CAF50', '#2196F3', '#E91E63', '#9C27B0', '#00BCD4'];
+
+function launchConfetti(count = 30) {
+  const wrap = document.getElementById('confetti-wrap');
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `left:${Math.random()*100}%;top:-10px;background:${CONFETTI_COLORS[Math.floor(Math.random()*CONFETTI_COLORS.length)]};width:${8+Math.random()*10}px;height:${8+Math.random()*10}px;border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*.5}s`;
+    wrap.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
+}
+
+function stopAllAudio() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
+  document.querySelectorAll('.btn-audio-answer, #btn-audio-question').forEach(b => b.classList.remove('playing'));
+}
+
+function playAudio(url, btnEl) {
+  stopAllAudio();
+  if (!url) return;
+  const audio = new Audio(url);
+  currentAudio = audio;
+  if (btnEl) btnEl.classList.add('playing');
+  audio.play().catch(() => {});
+  audio.addEventListener('ended', () => {
+    if (btnEl) btnEl.classList.remove('playing');
+    if (currentAudio === audio) currentAudio = null;
+  });
+}
+
+function playQuestionAudio() {
+  playAudio(activeQuestions[currentQ].audio, document.getElementById('btn-audio-question'));
+}
+
+function playAnswerAudio(cardIdx) {
+  playAudio(answersLayout[cardIdx].audio, document.getElementById(`audio-btn-${cardIdx}`));
+}
+
+function playCorrectSound() {
+  if (!AUDIO_CORRETO) return;
+  const audio = new Audio(AUDIO_CORRETO);
+  audio.play().catch(() => {});
+  setTimeout(() => { audio.pause(); audio.currentTime = 0; }, 3000);
+}
+
+function playWrongSound() {
+  if (!AUDIO_ERRADO) return;
+  const audio = new Audio(AUDIO_ERRADO);
+  audio.play().catch(() => {});
+  setTimeout(() => { audio.pause(); audio.currentTime = 0; }, 3000);
+}
+function renderQuestion() {
+  const q = activeQuestions[currentQ];
+  shuffleAnswers(q);
+  gameState = 'asking';
+
+  updateSceneBg(q.block);
+
+  document.getElementById('q-label').textContent           = `${currentQ + 1}/15`;
+  document.getElementById('progress-bar-fill').style.width = `${(currentQ / 15) * 100}%`;
+  document.getElementById('score-num').textContent         = score;
+  document.getElementById('timer-pts-label').textContent   = TIMER_MAX_PTS + ' pts';
+  document.getElementById('timer-bar-fill').style.width    = '100%';
+  document.getElementById('timer-bar-fill').classList.remove('timer-low');
+  document.getElementById('timer-countdown').textContent   = '2:00';
+  document.getElementById('timer-countdown').classList.remove('countdown-low');
+
+  setCapiState('asking');
+
+  if (waitingTimer) clearTimeout(waitingTimer);
+  waitingTimer = setTimeout(() => {
+    if (gameState === 'asking') {
+      setCapiState('hint');
+      setBubble('waiting', '⏳ Psiu...', q.hint);
+    }
+  }, 5000);
+
+  setBubble('asking', 'Pergunta ❓', q.question);
+
+  for (let i = 0; i < 2; i++) {
+    const a    = answersLayout[i];
+    const card = document.getElementById(`card-${i}`);
+    card.className = 'answer-card';
+
+    const imgEl = document.getElementById(`img-${i}`);
+    imgEl.src = a.img || `https://placehold.co/220x220/D4C0A0/7A5030?text=${encodeURIComponent(a.label)}`;
+    imgEl.alt = a.label;
+
+    document.getElementById(`label-${i}`).textContent = a.label;
+    document.getElementById(`tag-${i}`).textContent   = '';
+    card.onclick = () => handleAnswer(i);
+
+    const aBtn = document.getElementById(`audio-btn-${i}`);
+    aBtn.style.display = a.audio ? 'flex' : 'none';
+  }
+
+  document.getElementById('btn-next').style.display = 'none';
+  document.getElementById('timeout-overlay').classList.remove('active');
+  document.getElementById('btn-audio-question').style.display = q.audio ? 'block' : 'none';
+
+  stopAllAudio();
+  if (q.audio) setTimeout(() => playQuestionAudio(), 400);
+
+  startTimer();
+}
+
+function setBubble(state, label, text) {
+  const bubble = document.getElementById('speech-bubble');
+  bubble.className = `speech-bubble state-${state}`;
+  document.getElementById('bubble-label').textContent = label;
+  const el = document.getElementById('bubble-text');
+  el.style.animation = 'none';
+  el.offsetHeight;
+  el.style.animation = '';
+  el.textContent = text;
+}
+
+function handleAnswer(cardIdx) {
+  if (gameState === 'correct') return;
+  if (waitingTimer) { clearTimeout(waitingTimer); waitingTimer = null; }
+
+  const q     = activeQuestions[currentQ];
+  const ans   = answersLayout[cardIdx];
+  const other = 1 - cardIdx;
+
+  stopAllAudio();
+
+  if (ans.correct) {
+    stopTimer();
+    const pts = getCurrentPts();
+    gameState = 'correct';
+    score += pts;
+    firstAttemptCorrect++;
+
+    document.getElementById('score-num').textContent                  = score;
+    document.getElementById(`card-${cardIdx}`).classList.add('correct-reveal', 'disabled');
+    document.getElementById(`tag-${cardIdx}`).textContent             = '✅';
+    document.getElementById(`card-${other}`).classList.add('disabled');
+    document.getElementById('timer-pts-label').textContent            = `+${pts} pts`;
+
+    setCapiState('correct');
+    const wrap = document.getElementById('capi-svg-wrap');
+    wrap.classList.add('capi-happy-anim');
+    setTimeout(() => wrap.classList.remove('capi-happy-anim'), 1800);
+
+    setBubble('correct', `🎉 +${pts} pontos!`, q.info);
+    popPoints(pts);
+    launchConfetti();
+    playCorrectSound();
+
+    document.getElementById('btn-next').style.display = 'block';
+
+  } else {
+    penaltyFlash();
+    stopTimer();
+    gameState = 'correct';
+
+    document.getElementById('timer-bar-fill').style.width = '0%';
+    document.getElementById('timer-bar-fill').classList.add('timer-low');
+    document.getElementById('timer-pts-label').textContent = '0 pts';
+    document.getElementById('timer-countdown').textContent = '0:00';
+    document.getElementById('timer-countdown').classList.add('countdown-low');
+
+    document.getElementById(`card-${cardIdx}`).classList.add('wrong-reveal', 'disabled');
+    document.getElementById(`tag-${cardIdx}`).textContent  = '❌';
+    document.getElementById(`card-${other}`).classList.add('correct-reveal', 'disabled');
+    document.getElementById(`tag-${other}`).textContent    = '✅';
+
+    setCapiState('waiting');
+    const wrap = document.getElementById('capi-svg-wrap');
+    wrap.classList.add('capi-sad-anim');
+    setTimeout(() => wrap.classList.remove('capi-sad-anim'), 500);
+
+    setBubble('wrong', '❌ Errou!', randomFrom(WRONG_MSGS));
+    popPoints(0);
+popPoints(0);
+playWrongSound(); // ← adiciona essa linha
+    document.getElementById('btn-next').style.display = 'block';
+  }
+}
+
+function nextQuestion() {
+  if (waitingTimer) { clearTimeout(waitingTimer); waitingTimer = null; }
+  stopAllAudio();
+  stopTimer();
+  currentQ++;
+
+  if (currentQ === 5)  { showTransition('🎉', 'Fase Fácil Concluída!', 'Você foi incrível! Bora para o próximo desafio!', '🎪', 'Próximo: Nível Médio!'); return; }
+  if (currentQ === 10) { showTransition('🏆', 'Fase Média Concluída!', 'Uau, que máximo! Prepare-se para o desafio difícil!', '🏙️', 'Próximo: Nível Difícil!'); return; }
+  if (currentQ === 15) { showEnd(); return; }
+
+  renderQuestion();
+}
+
+function showTransition(emoji, title, msg, nextIcon, nextLabel) {
+  document.getElementById('transition-emoji').textContent = emoji;
+  document.getElementById('transition-title').textContent = title;
+  document.getElementById('transition-msg').textContent   = msg;
+  document.getElementById('zone-next-info').innerHTML     = `<span>${nextIcon}</span><p>${nextLabel}</p>`;
+  document.getElementById('tsm-pts').textContent          = score;
+  document.getElementById('tsm-first').textContent        = firstAttemptCorrect;
+  document.getElementById('tsm-miss').textContent         = currentQ - firstAttemptCorrect;
+  launchConfetti(20);
+  showScreen('screen-transition');
+}
+
+document.getElementById('btn-transition-next').onclick = () => {
+  startCountdown(() => { showScreen('screen-game'); renderQuestion(); });
+};
+
+function showEnd() {
+  document.getElementById('end-title').textContent = `Parabéns, ${playerName || 'Amiguinho'}! 🎉`;
+
+  const infoEl = document.getElementById('end-player-info');
+  if (playerSchool && playerAge) {
+    infoEl.textContent   = `${playerAge} anos • ${playerSchool}`;
+    infoEl.style.display = 'block';
+  } else {
+    infoEl.style.display = 'none';
+  }
+
+  document.getElementById('end-score').textContent = score;
+  document.getElementById('bd-first').textContent  = firstAttemptCorrect;
+  document.getElementById('bd-miss').textContent   = 15 - firstAttemptCorrect;
+
+  let stars, msg;
+  if (score >= 1100)      { stars = '⭐⭐⭐'; msg = 'Incrível! Você é um expert em Brusque e respondeu super rápido! A Capi está orgulhosa! 🦫💛'; }
+  else if (score >= 550)  { stars = '⭐⭐';  msg = 'Muito bem! Você conhece bastante de Brusque! Treina mais e vai chegar lá!'; }
+  else                    { stars = '⭐';    msg = 'Bom começo! Que tal explorar Brusque e tentar de novo? Você vai melhorar!'; }
+
+  document.getElementById('end-stars').textContent = stars;
+  document.getElementById('end-msg').textContent   = msg;
+  launchConfetti(40);
+  showScreen('screen-end');
+}
+
+function restartGame() {
+  currentQ = 0; score = 0; firstAttemptCorrect = 0; timeoutCount = 0;
+  gameState = 'asking';
+  playerName = ''; playerSchool = ''; playerAge = '';
+  stopTimer();
+  stopAllAudio();
+  if (waitingTimer) { clearTimeout(waitingTimer); waitingTimer = null; }
+
+  ['input-nome', 'input-escola', 'input-idade'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = '';
+    el.classList.remove('field-invalid');
+  });
+  document.getElementById('form-error').style.display = 'none';
+  showScreen('screen-name');
+}
+
+document.getElementById('btn-start').onclick = () => showScreen('screen-name');
+
+document.getElementById('btn-name-ok').onclick = () => {
+  const nome   = document.getElementById('input-nome').value.trim();
+  const escola = document.getElementById('input-escola').value.trim();
+  const idade  = document.getElementById('input-idade').value.trim();
+
+  const fields = [
+    { el: document.getElementById('input-nome'),   val: nome },
+    { el: document.getElementById('input-escola'), val: escola },
+    { el: document.getElementById('input-idade'),  val: idade },
+  ];
+
+  const filled = fields.filter(f => f.val !== '').length;
+  if (filled > 0 && filled < 3) {
+    fields.forEach(f => {
+      if (f.val === '') {
+        f.el.classList.add('field-invalid');
+        f.el.addEventListener('input', () => f.el.classList.remove('field-invalid'), { once: true });
+      }
+    });
+    document.getElementById('form-error').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('form-error').style.display = 'none';
+  playerName   = nome   || 'Amiguinho';
+  playerSchool = escola || '';
+  playerAge    = idade  || '';
+  document.getElementById('map-greeting').textContent = `Oi, ${playerName}! Vamos explorar Brusque!`;
+  showScreen('screen-map');
+};
+
+document.getElementById('btn-map-start').onclick = () => {
+  currentQ = 0; score = 0; firstAttemptCorrect = 0; timeoutCount = 0; gameState = 'asking';
+  buildPlaythrough();
+  startCountdown(() => { showScreen('screen-game'); renderQuestion(); });
+};
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('screen-game').classList.contains('active')) return;
+  if (e.key === '1') handleAnswer(0);
+  if (e.key === '2') handleAnswer(1);
+  if ((e.key === 'Enter' || e.key === ' ') && document.getElementById('btn-next').style.display !== 'none') {
+    e.preventDefault();
+    nextQuestion();
+  }
+});
+
+</script>
+</body>
+</html>
